@@ -1,26 +1,22 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { observer } from "mobx-react";
+import { createContext } from "react";
+import Tree from "./components/Tree";
+import { TreeControls } from "./components/TreeControls";
+import stores from "./stores";
+import "./styles/App.css";
+export const Store = createContext(stores.store);
+export const App = observer(() => {
+  // const { treeStore } = stores.store;
 
-function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Store.Provider value={stores.store}>
+      <div className='container'>
+        <div className='content'>
+          <Tree tree={stores.store.treeStore.tree} />
+          <TreeControls />
+        </div>
+      </div>
+    </Store.Provider>
   );
-}
+});
 
-export default App;
