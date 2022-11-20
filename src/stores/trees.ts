@@ -1,59 +1,61 @@
 import { IFindTreeeResult } from "./../types/tree";
 import { v4 } from "uuid";
-import { makeAutoObservable, runInAction, toJS } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 import { ITree } from "../types/tree";
 
-export const initialTree: () => ITree = () => ({
-  id: "0",
-  title: "Покупка квартиры",
-  children: [
-    {
-      id: "1",
-      title: "Поиск квартиры",
-    },
-    {
-      id: "2",
-      title: "Осмотр квартиры",
-      children: [
-        {
-          id: "3",
-          title: "Внешний вид дома",
-          children: [
-            {
-              id: "4",
-              title: "Фасад",
-            },
-            {
-              id: "5",
-              title: "Общее состояние",
-            },
-          ],
-        },
-        {
-          id: "6",
-          title: "Состояние квартиры",
-        },
-      ],
-    },
-    {
-      id: "7",
-      title: "Оформление документов",
-    },
-    {
-      id: "8",
-      title: "Внесение оплаты",
-      children: [
-        { id: "9", title: "Сходить в банк" },
-        { id: "10", title: "Оплатить" },
-      ],
-    },
-  ],
-});
+export const initialTree: ITree[] = [
+  {
+    id: "0",
+    title: "Покупка квартиры",
+    children: [
+      {
+        id: "1",
+        title: "Поиск квартиры",
+      },
+      {
+        id: "2",
+        title: "Осмотр квартиры",
+        children: [
+          {
+            id: "3",
+            title: "Внешний вид дома",
+            children: [
+              {
+                id: "4",
+                title: "Фасад",
+              },
+              {
+                id: "5",
+                title: "Общее состояние",
+              },
+            ],
+          },
+          {
+            id: "6",
+            title: "Состояние квартиры",
+          },
+        ],
+      },
+      {
+        id: "7",
+        title: "Оформление документов",
+      },
+      {
+        id: "8",
+        title: "Внесение оплаты",
+        children: [
+          { id: "9", title: "Сходить в банк" },
+          { id: "10", title: "Оплатить" },
+        ],
+      },
+    ],
+  },
+];
 export class TreeStore {
-  tree: ITree;
+  tree: ITree[];
   selectedTree: ITree | null = null;
   constructor() {
-    this.tree = initialTree();
+    this.tree = initialTree;
     makeAutoObservable(this, {
       tree: true,
       selectedTree: true,
@@ -61,7 +63,7 @@ export class TreeStore {
   }
   resetTree = () => {
     runInAction(() => {
-      this.tree = initialTree();
+      this.tree = initialTree;
     });
   };
   setSelectedTree = (incomingTree: ITree | null) => {
@@ -71,16 +73,21 @@ export class TreeStore {
       });
     }
     const { tree } = this.findTree(incomingTree.id);
-
     if (!tree) return;
     runInAction(() => {
       this.selectedTree = tree;
     });
   };
-  createChildren = (incomingTree: ITree, childrenTitle: string) => {
+  createChildren = (incomingTree: ITree | null, childrenTitle: string) => {
     const newChildren = { id: v4(), title: childrenTitle };
+    if (!incomingTree) {
+      runInAction(() => {
+        this.tree.push(newChildren);
+      });
+      return newChildren;
+    }
     const { tree } = this.findTree(incomingTree.id);
-    if (!tree) return;
+    if (!tree) return null;
     runInAction(() => {
       if (tree?.children) {
         tree?.children?.push(newChildren);
@@ -88,6 +95,7 @@ export class TreeStore {
         tree.children = [newChildren];
       }
     });
+    return newChildren;
   };
   renameTitle = (incomingTree: ITree, newTitle: string) => {
     const { tree } = this.findTree(incomingTree.id);
@@ -98,22 +106,24 @@ export class TreeStore {
   };
   deleteTree = () => {
     if (!this.selectedTree) return;
-    const { parent, tree } = this.findTree(this.selectedTree.id);
+    const { parent } = this.findTree(this.selectedTree.id);
     if (parent && parent.children) {
       parent.children = parent.children.filter((i) => i.id !== this.selectedTree?.id);
+    } else {
+      this.tree = this.tree.filter((i) => i.id !== this.selectedTree?.id);
     }
   };
 
-  private findTree = (treeId: string, incomingTree: ITree = this.tree): IFindTreeeResult => {
+  private findTree = (treeId: string, incomingTrees: ITree[] = this.tree): IFindTreeeResult => {
     let result: IFindTreeeResult | null = { parent: null, tree: null };
-    if (incomingTree.id === treeId) {
-      return { parent: null, tree: incomingTree };
-    }
-    if (incomingTree.children) {
-      for (let i = 0; i < incomingTree.children.length; i++) {
+    for (let i = 0; i < incomingTrees.length; i++) {
+      if (incomingTrees[i].id === treeId) {
+        return { parent: null, tree: incomingTrees[i] };
+      }
+      if (incomingTrees[i].children) {
         result = {
-          parent: this.findTree(treeId, incomingTree.children[i]).parent ?? incomingTree,
-          tree: this.findTree(treeId, incomingTree.children[i]).tree,
+          parent: this.findTree(treeId, incomingTrees[i].children).parent ?? incomingTrees[i],
+          tree: this.findTree(treeId, incomingTrees[i].children).tree,
         };
         if (result.tree) break;
       }

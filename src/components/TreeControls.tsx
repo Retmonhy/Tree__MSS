@@ -12,7 +12,7 @@ export const TreeControls = observer(() => {
   const [action, setAction] = useState<ActionType | null>(null);
   const [inputIsOpened, setInputIsOpened] = useState<boolean>(false);
   const { treeStore } = useContext(Store);
-  const { createChildren, renameTitle, selectedTree, deleteTree, resetTree } = treeStore;
+  const { createChildren, renameTitle, deleteTree, selectedTree, resetTree } = treeStore;
   useEffect(() => {
     setInputIsOpened(false);
     setValue("");
