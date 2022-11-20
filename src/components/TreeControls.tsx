@@ -50,8 +50,21 @@ export const TreeControls = observer(() => {
     <div className='tree-controls'>
       {selectedTree && inputIsOpened && (
         <div className='input-wrapper'>
-          <input className='input' value={value} onChange={(e) => setValue(e.target.value)} autoFocus={true} />
-          <Button title='Применить' clickHand={action === ActionType.create ? create : rename} />
+          <input
+            className='input'
+            placeholder={action === ActionType.create ? "Введите название" : ""}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            autoFocus={true}
+          />
+          <div>
+            <Button title='Отменить' clickHand={() => setInputIsOpened(false)} />
+            <Button
+              className='btn_margin-left'
+              title='Применить'
+              clickHand={action === ActionType.create ? create : rename}
+            />
+          </div>
         </div>
       )}
       <div className='tree-controls__buttons'>

@@ -30,12 +30,14 @@ body {
 }
 .btn {
   padding: 8px;
+  min-width: 120px;
 }
 .btn_margin-left {
   margin-left: 8px;
 }
 .input {
   padding: 8px;
+  width: 50%;
 }
 .input:focus-visible {
   outline: none;
@@ -46,6 +48,5 @@ body {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: red;
 }
 
